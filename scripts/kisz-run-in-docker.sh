@@ -5,6 +5,7 @@
 # Example for opening a console without GPUs: bash ./scripts/run-in-docker.sh bash
 # Example for opening a console with GPUs 0,1,5,7: bash ./scripts/run-in-docker.sh -g 0,1,5,7 bash
 # Example with GPUs a custom docker image and training script: bash ./scripts/run-in-docker.sh -g 0,1,2,3 -i my-cool/docker-image:latest python train.py ...
+# Example running sweeps: bash scripts/run-in-docker.sh -g 6 "python init_sweep.py"
 # ---------------------
 # The current directory is mounted to /workspace in the docker container.
 # We automatically detect W&B login credentials in the ~/.netrc file and pass them to the docker container. To store them, do wandb login once on the host machine.
@@ -52,9 +53,8 @@ parse_arguments() {
         esac
         shift
     done
-
     command="pip install -e . && ${command}"
-    
+
 }
 
 # Call the function to parse arguments
@@ -67,7 +67,7 @@ echo "gpus: $gpus"
 
 # Look for WANDB_API_KEY
 if [ -z "$WANDB_API_KEY" ]; then
-    export WANDB_API_KEY=$(awk '/api.wandb.ai/{getline; getline; print $2}' ~/.netrc)
+    export WANDB_API_KEY=$(awk '/api.wandb.ai/{getline; getline; print $2}' $PWD/../.netrc)
     if [ -z "$WANDB_API_KEY" ]; then
         echo "WANDB_API_KEY not found"
     else
@@ -92,12 +92,17 @@ fi
 # --user $(id -u):$(id -g) \ # use root user instead
 
 docker run --rm -it --ipc=host --network=host \
-    -v "$(pwd)":/workspaces/gorillawatch -w /workspaces/gorillawatch \
-    -v "/scratch2/gorillawatch/data:/workspaces/gorillawatch/data:ro" \
+    -v "${PWD}/../gorillawatch:/workspaces/gorillawatch" \
+    -w /workspaces/gorillawatch \
+    -v "${HOME}/data:/workspaces/gorillawatch/data:ro" \
+    -v "${PWD}/../.netrc:/home/gorilla/.netrc:ro" \
+    -v "${PWD}/../.cache:/home/gorilla/.cache:ro" \
+    -v "/mnt/vast-gorilla:/workspaces/gorillawatch/video_data:ro" \
+    -v "/mnt/vast-gorilla/cropped-images:/workspaces/gorillawatch/cropped-images-squared:ro" \
     --user 0:0 \
     --env XDG_CACHE_HOME --env HF_DATASETS_CACHE --env WANDB_CACHE_DIR --env WANDB_DATA_DIR --env WANDB_API_KEY \
     --gpus=\"device=${gpus}\" \
-    --name gorillawatch-YOURNAME-GPU \
+    --name gorillawatch-YOURNAME-gpu \
     $image /bin/bash -c "${command}"
 
 # print done to console
