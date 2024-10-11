@@ -150,6 +150,8 @@ MNIST/
 /datasets/
 /models/
 mnist/
+sam2/
+models/
 .gitconfig
 *.pt
 *.ckpt

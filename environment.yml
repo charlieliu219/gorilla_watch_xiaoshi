@@ -60,8 +60,9 @@ dependencies:
   - pip
   - pip:
       - pipx
-       # NOTE(memben): 🚩 see end of dockerfile, needed to fix dependency hell, https://github.com/ultralytics/ultralytics/issues/1270
       - opencv-python-headless
+      - torch>=2.3.1
+      - torchvision>=0.18.1
       - psycopg2-binary
       - sqlalchemy
       - warmup-scheduler
@@ -71,6 +72,7 @@ dependencies:
       - lapx>=0.5.2 # for ultralytics tracking
       - types-PyYAML
       - git+https://github.com/facebookresearch/segment-anything.git
+      - git+https://github.com/facebookresearch/sam2.git
       - easyocr
       - umap-learn
       - bokeh
