@@ -140,8 +140,6 @@ dmypy.json
 /template
 /ultralytics
 yolov8n.pt
-/.vscode
-.devcontainer
 /runs
 /checkpoints
 .ruff_cache
